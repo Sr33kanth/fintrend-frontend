@@ -4,7 +4,7 @@ import { Container, Grid, Box, Typography, CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Header from './components/Layout/Header';
 import WatchlistCard from './components/Watchlist/WatchlistCard';
-import NewsCard from './components/News/NewsCard';
+import LeftPane from './components/Layout/LeftPane';
 import api from './services/api';
 import { NewsArticle, NewsResponse } from './types';
 
@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [news, setNews] = useState<any>({}); // Use any to handle various response formats
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [newsSource, setNewsSource] = useState<string | null>(null);
 
   // Fetch initial data
   useEffect(() => {
@@ -43,7 +44,7 @@ const App: React.FC = () => {
         // Get news if there are stocks in the watchlist
         if (stockList.length > 0) {
           try {
-            const newsData = await api.getStockNews();
+            const newsData = await api.getStockNews(newsSource || undefined);
             // Store the news data as-is, let the NewsCard component handle formatting
             setNews(newsData);
           } catch (newsErr) {
@@ -63,7 +64,7 @@ const App: React.FC = () => {
     };
 
     fetchInitialData();
-  }, []);
+  }, [newsSource]);
 
   // Handler for adding a stock
   const handleAddStock = async (symbol: string): Promise<void> => {
@@ -76,7 +77,7 @@ const App: React.FC = () => {
       // Refresh news after adding a stock
       if (stockList.length > 0) {
         try {
-          const newsData = await api.getStockNews();
+          const newsData = await api.getStockNews(newsSource || undefined);
           setNews(newsData);
         } catch (newsErr) {
           console.error("Error fetching news:", newsErr);
@@ -99,7 +100,7 @@ const App: React.FC = () => {
       // Refresh news after removing a stock
       if (stockList.length > 0) {
         try {
-          const newsData = await api.getStockNews();
+          const newsData = await api.getStockNews(newsSource || undefined);
           setNews(newsData);
         } catch (newsErr) {
           console.error("Error fetching news:", newsErr);
@@ -110,6 +111,15 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error("Error removing stock:", err);
       throw err;
+    }
+  };
+
+  // Handler for changing news source filter
+  const handleSourceChange = (source: string | null) => {
+    // Only set loading if we're actually changing the source
+    if (source !== newsSource) {
+      setLoading(true);
+      setNewsSource(source);
     }
   };
 
@@ -125,15 +135,20 @@ const App: React.FC = () => {
             </Typography>
           ) : (
             <Grid container spacing={3}>
+              <Grid item xs={12} md={8}>
+                <LeftPane 
+                  news={news} 
+                  loading={loading} 
+                  selectedSource={newsSource}
+                  onSourceChange={handleSourceChange}
+                />
+              </Grid>
               <Grid item xs={12} md={4}>
                 <WatchlistCard 
                   stocks={stocks} 
                   onAddStock={handleAddStock} 
                   onRemoveStock={handleRemoveStock} 
                 />
-              </Grid>
-              <Grid item xs={12} md={8}>
-                <NewsCard news={news} loading={loading} />
               </Grid>
             </Grid>
           )}

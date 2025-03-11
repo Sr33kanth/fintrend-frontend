@@ -1,6 +1,6 @@
 // src/components/News/NewsItem.tsx
 import React from 'react';
-import { Card, CardContent, Typography, Link, Box, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Link, Box, Chip, Stack } from '@mui/material';
 import { NewsArticle } from '../../types';
 
 interface NewsItemProps {
@@ -9,7 +9,7 @@ interface NewsItemProps {
 
 const NewsItem: React.FC<NewsItemProps> = ({ article }) => {
   // Extract properties using the correct field names from the API
-  const { headline, url, source, datetime, summary, symbol } = article;
+  const { headline, url, source, datetime, summary, symbol, platform, subreddit } = article;
   
   // Format the published date
   const formatDate = (dateString: string) => {
@@ -24,6 +24,14 @@ const NewsItem: React.FC<NewsItemProps> = ({ article }) => {
     } catch (error) {
       return dateString;
     }
+  };
+  
+  // Format the source display
+  const getSourceDisplay = () => {
+    if (source.toLowerCase() === 'reddit' && subreddit) {
+      return `Reddit - r/${subreddit}`;
+    }
+    return source;
   };
   
   return (
@@ -41,7 +49,7 @@ const NewsItem: React.FC<NewsItemProps> = ({ article }) => {
           </Link>
         </Typography>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1, flexWrap: 'wrap' }}>
           {symbol && (
             <Chip
               label={symbol}
@@ -49,8 +57,16 @@ const NewsItem: React.FC<NewsItemProps> = ({ article }) => {
               color="primary"
             />
           )}
+          {platform && (
+            <Chip
+              label={platform}
+              size="small"
+              color="secondary"
+              variant="outlined"
+            />
+          )}
           <Typography variant="caption" color="text.secondary">
-            {source} • {formatDate(datetime)}
+            {getSourceDisplay()} • {formatDate(datetime)}
           </Typography>
         </Box>
         

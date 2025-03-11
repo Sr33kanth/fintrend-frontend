@@ -92,15 +92,30 @@ const api = {
     },
     
     // News operations
-    getStockNews: async (): Promise<any> => {
+    getStockNews: async (source?: string): Promise<any> => {
         try {
-            const response = await apiClient.get('/news');
+            const params = source ? { source } : {};
+            const response = await apiClient.get('/news', { params });
             // Return the data as-is, let component handle formatting
             return response.data;
         } catch (error) {
             console.error('Error fetching stock news:', error);
             const axiosError = error as AxiosError;
             throw axiosError.response?.data || { detail: 'Failed to fetch stock news' };
+        }
+    },
+    
+    // Reddit breakout posts
+    getRedditBreakouts: async (limit: number = 20): Promise<any> => {
+        try {
+            const response = await apiClient.get('/reddit/breakouts', { 
+                params: { limit } 
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching Reddit breakouts:', error);
+            const axiosError = error as AxiosError;
+            throw axiosError.response?.data || { detail: 'Failed to fetch Reddit breakouts' };
         }
     }
 };

@@ -9,6 +9,8 @@ export interface NewsArticle {
   datetime: string;
   symbol?: string; // Optional property to track which stock this news belongs to
   id?: string;     // Optional ID for React keys
+  platform?: string; // Optional property to track the platform (finnhub, reddit, etc.)
+  subreddit?: string; // Optional property for Reddit posts to track the subreddit
 }
 
 // News response structure from API
