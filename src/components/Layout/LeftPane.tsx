@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ForumIcon from '@mui/icons-material/Forum';
 import NewsCard from '../News/NewsCard';
+import BreakoutStocks from '../Reddit/BreakoutStocks';
 import BreakoutsCard from '../Reddit/BreakoutsCard';
 
 interface TabPanelProps {
@@ -43,13 +45,15 @@ interface LeftPaneProps {
   loading: boolean;
   selectedSource: string | null;
   onSourceChange: (source: string | null) => void;
+  onAddToWatchlist: (symbol: string) => Promise<void>;
 }
 
 const LeftPane: React.FC<LeftPaneProps> = ({ 
   news, 
   loading, 
   selectedSource, 
-  onSourceChange 
+  onSourceChange,
+  onAddToWatchlist
 }) => {
   const [tabValue, setTabValue] = useState(0);
   const [breakoutsLoading, setBreakoutsLoading] = useState(false);
@@ -73,9 +77,14 @@ const LeftPane: React.FC<LeftPaneProps> = ({
             {...a11yProps(0)} 
           />
           <Tab 
-            icon={<TrendingUpIcon />} 
-            label="Breakouts" 
+            icon={<ForumIcon />} 
+            label="Reddit Posts" 
             {...a11yProps(1)} 
+          />
+          <Tab 
+            icon={<TrendingUpIcon />} 
+            label="Breakout Analysis" 
+            {...a11yProps(2)} 
           />
         </Tabs>
       </Box>
@@ -92,6 +101,9 @@ const LeftPane: React.FC<LeftPaneProps> = ({
           loading={breakoutsLoading}
           setLoading={setBreakoutsLoading}
         />
+      </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+        <BreakoutStocks onAddToWatchlist={onAddToWatchlist} />
       </TabPanel>
     </Box>
   );

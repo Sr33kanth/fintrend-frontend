@@ -141,6 +141,7 @@ const App: React.FC = () => {
                   loading={loading} 
                   selectedSource={newsSource}
                   onSourceChange={handleSourceChange}
+                  onAddToWatchlist={handleAddStock}
                 />
               </Grid>
               <Grid item xs={12} md={4}>

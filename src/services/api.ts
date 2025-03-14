@@ -117,6 +117,31 @@ const api = {
             const axiosError = error as AxiosError;
             throw axiosError.response?.data || { detail: 'Failed to fetch Reddit breakouts' };
         }
+    },
+
+    // Breakout stock suggestions with LLM analysis
+    getBreakoutSuggestions: async (params?: {
+        subreddits?: string;
+        limit?: number;
+        flairs?: string;
+        sentiment?: string;
+        target_flairs?: string[];
+        sentiment_phrases?: string[];
+    }): Promise<any> => {
+        try {
+            // Convert arrays to comma-separated strings if needed
+            const formattedParams = {
+                ...params,
+                target_flairs: params?.target_flairs?.join(','),
+                sentiment_phrases: params?.sentiment_phrases?.join(',')
+            };
+            const response = await apiClient.get('/stocks/breakout-suggestions', { params: formattedParams });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching breakout suggestions:', error);
+            const axiosError = error as AxiosError;
+            throw axiosError.response?.data || { detail: 'Failed to fetch breakout suggestions' };
+        }
     }
 };
 
