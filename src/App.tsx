@@ -1,57 +1,85 @@
 // src/App.tsx
-import React, { useState, useEffect } from 'react';
-import { Container, Grid, Box, Typography, CssBaseline, Paper, AppBar, Toolbar, IconButton, useMediaQuery } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Header from './components/Layout/Header';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { Container, Grid, Box, Typography, CssBaseline, Paper, AppBar, Toolbar, IconButton, useTheme, useMediaQuery } from '@mui/material';
+import { createTheme, ThemeProvider, alpha } from '@mui/material/styles';
 import WatchlistCard from './components/Watchlist/WatchlistCard';
 import LeftPane from './components/Layout/LeftPane';
 import api from './services/api';
-import { NewsArticle, NewsResponse } from './types';
-import logo from './assets/logo.png'; // Correct path
+import logo from './assets/logo.png';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 
 // Create a light theme
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1976d2',
+      main: '#2962ff', // More vibrant blue
+      light: '#768fff',
+      dark: '#0039cb',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#00c853', // Success green
+      light: '#5efc82',
+      dark: '#009624',
     },
     background: {
-      default: '#f5f5f5',
+      default: '#f5f7fa', // Slightly blue-tinted background
       paper: '#ffffff',
     },
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontSize: '2.5rem',
-      fontWeight: 700,
-      letterSpacing: '0.05em',
+      fontSize: '1.75rem',
+      fontWeight: 600,
+      letterSpacing: '0.02em',
     },
     h2: {
-      fontSize: '1.75rem',
+      fontSize: '1.5rem',
       fontWeight: 600,
     },
     h3: {
-      fontSize: '1.5rem',
+      fontSize: '1.25rem',
       fontWeight: 600,
+    },
+    button: {
+      textTransform: 'none',
+      fontWeight: 500,
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
     },
   },
 });
 
-const App: React.FC = () => {
+// Main Dashboard Component
+const Dashboard = () => {
   // State management
-  const [stocks, setStocks] = useState<string[]>([]);
-  const [news, setNews] = useState<any>({});
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [newsSource, setNewsSource] = useState<string | null>(null);
+  const [stocks, setStocks] = React.useState<string[]>([]);
+  const [news, setNews] = React.useState<any>({});
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [newsSource, setNewsSource] = React.useState<string | null>(null);
 
   // Fetch initial data
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
@@ -79,11 +107,9 @@ const App: React.FC = () => {
   const handleAddStock = async (symbol: string): Promise<void> => {
     try {
       const updatedWatchlist = await api.addToWatchlist(symbol);
-      // Ensure watchlist is an array
       const stockList = Array.isArray(updatedWatchlist) ? updatedWatchlist : [];
       setStocks(stockList);
       
-      // Refresh news after adding a stock
       if (stockList.length > 0) {
         try {
           const newsData = await api.getStockNews(newsSource || undefined);
@@ -102,11 +128,9 @@ const App: React.FC = () => {
   const handleRemoveStock = async (symbol: string): Promise<void> => {
     try {
       const updatedWatchlist = await api.removeFromWatchlist(symbol);
-      // Ensure watchlist is an array
       const stockList = Array.isArray(updatedWatchlist) ? updatedWatchlist : [];
       setStocks(stockList);
       
-      // Refresh news after removing a stock
       if (stockList.length > 0) {
         try {
           const newsData = await api.getStockNews(newsSource || undefined);
@@ -125,7 +149,6 @@ const App: React.FC = () => {
 
   // Handler for changing news source filter
   const handleSourceChange = (source: string | null) => {
-    // Only set loading if we're actually changing the source
     if (source !== newsSource) {
       setLoading(true);
       setNewsSource(source);
@@ -133,78 +156,141 @@ const App: React.FC = () => {
   };
 
   return (
+    <Container component="main" sx={{ 
+      flexGrow: 1, 
+      py: 4,
+      px: { xs: 1, sm: 2, md: 3 },
+      mt: 2
+    }}>
+      {error ? (
+        <Typography color="error" align="center" sx={{ my: 4 }}>
+          {error}
+        </Typography>
+      ) : (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={8}>
+            <Paper 
+              elevation={0}
+              sx={{
+                p: 3,
+                height: '100%',
+                borderRadius: 2,
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                }
+              }}
+            >
+              <LeftPane 
+                news={news} 
+                loading={loading} 
+                selectedSource={newsSource}
+                onSourceChange={handleSourceChange}
+                onAddToWatchlist={handleAddStock}
+              />
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper 
+              elevation={0}
+              sx={{
+                p: 3,
+                height: '100%',
+                borderRadius: 2,
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                }
+              }}
+            >
+              <WatchlistCard 
+                stocks={stocks} 
+                onAddStock={handleAddStock} 
+                onRemoveStock={handleRemoveStock} 
+              />
+            </Paper>
+          </Grid>
+        </Grid>
+      )}
+    </Container>
+  );
+};
+
+// Main App Component
+const App: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
-        <AppBar position="fixed" color="default" elevation={3} sx={{ bgcolor: '#1976d2' }}>
-          <Toolbar sx={{ justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <img src={logo} alt="FinTrend" style={{ height: 60, marginRight: 16 }} />
-              <Typography variant="h1" color="white" sx={{ display: { xs: 'none', sm: 'block' } }}>
-                FinTrend
-              </Typography>
-            </Box>
-          </Toolbar>
+        <AppBar 
+          position="fixed" 
+          elevation={0}
+          sx={{ 
+            bgcolor: 'background.paper',
+            borderBottom: 1,
+            borderColor: 'divider',
+            backdropFilter: 'blur(20px)',
+            background: alpha('#fff', 0.95),
+          }}
+        >
+          <Container maxWidth="xl">
+            <Toolbar 
+              disableGutters 
+              sx={{ 
+                minHeight: { xs: 64, sm: 70 },
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ShowChartIcon 
+                  sx={{ 
+                    color: 'primary.main',
+                    fontSize: { xs: 28, sm: 32 },
+                    mr: 1 
+                  }} 
+                />
+                <Typography 
+                  variant="h1" 
+                  sx={{
+                    background: `linear-gradient(120deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 700,
+                    letterSpacing: '0.02em',
+                    fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                  }}
+                >
+                  FinTrend
+                </Typography>
+              </Box>
+
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center',
+                gap: 2,
+              }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    display: { xs: 'none', sm: 'block' },
+                  }}
+                >
+                  Market Intelligence Platform
+                </Typography>
+              </Box>
+            </Toolbar>
+          </Container>
         </AppBar>
-        <Toolbar /> {/* Spacer for fixed AppBar */}
+        <Toolbar sx={{ minHeight: { xs: 64, sm: 70 } }} />
         
-        <Container component="main" sx={{ 
-          flexGrow: 1, 
-          py: 4,
-          px: { xs: 1, sm: 2, md: 3 },
-          mt: 2
-        }}>
-          {error ? (
-            <Typography color="error" align="center" sx={{ my: 4 }}>
-              {error}
-            </Typography>
-          ) : (
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
-                <Paper 
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    height: '100%',
-                    borderRadius: 2,
-                    transition: 'transform 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                    }
-                  }}
-                >
-                  <LeftPane 
-                    news={news} 
-                    loading={loading} 
-                    selectedSource={newsSource}
-                    onSourceChange={handleSourceChange}
-                    onAddToWatchlist={handleAddStock}
-                  />
-                </Paper>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Paper 
-                  elevation={0}
-                  sx={{
-                    p: 3,
-                    height: '100%',
-                    borderRadius: 2,
-                    transition: 'transform 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                    }
-                  }}
-                >
-                  <WatchlistCard 
-                    stocks={stocks} 
-                    onAddStock={handleAddStock} 
-                    onRemoveStock={handleRemoveStock} 
-                  />
-                </Paper>
-              </Grid>
-            </Grid>
-          )}
-        </Container>
+        <Box component="main" sx={{ flexGrow: 1 }}>
+          <Dashboard />
+        </Box>
+        
         <Box 
           component="footer" 
           sx={{ 
@@ -212,11 +298,18 @@ const App: React.FC = () => {
             bgcolor: 'background.paper',
             borderTop: 1,
             borderColor: theme => theme.palette.divider,
-            textAlign: 'center' 
+            textAlign: 'center',
+            mt: 'auto'
           }}
         >
-          <Typography variant="body2" color="text.secondary">
-            FinTrend &copy; {new Date().getFullYear()}
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              color: 'text.secondary',
+              fontWeight: 500,
+            }}
+          >
+            FinTrend © {new Date().getFullYear()} • Market Intelligence Platform
           </Typography>
         </Box>
       </Box>
