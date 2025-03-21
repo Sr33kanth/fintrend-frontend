@@ -142,6 +142,34 @@ const api = {
             const axiosError = error as AxiosError;
             throw axiosError.response?.data || { detail: 'Failed to fetch breakout suggestions' };
         }
+    },
+
+    // Stock historical data for charts
+    getStockHistoricalData: async (symbol: string, period: string = '1m'): Promise<any> => {
+        try {
+            const response = await apiClient.get(`/api/stock/${symbol}/historical`, { 
+                params: { period } 
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error fetching historical data for ${symbol}:`, error);
+            const axiosError = error as AxiosError;
+            throw axiosError.response?.data || { detail: `Failed to fetch historical data for ${symbol}` };
+        }
+    },
+
+    // Multiple stocks historical data
+    getWatchlistHistoricalData: async (period: string = '1m'): Promise<any> => {
+        try {
+            const response = await apiClient.get('/api/watchlist/historical', { 
+                params: { period } 
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching watchlist historical data:', error);
+            const axiosError = error as AxiosError;
+            throw axiosError.response?.data || { detail: 'Failed to fetch watchlist historical data' };
+        }
     }
 };
 

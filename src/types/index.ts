@@ -23,3 +23,24 @@ export interface ApiError {
   status: number;
   detail: string;
 }
+
+// Historical stock data interface
+export interface HistoricalData {
+  symbol: string;
+  period: string;
+  dates: string[];
+  prices: number[];
+  volumes: number[];
+}
+
+// Watchlist historical data response structure from API
+export interface WatchlistHistoricalData {
+  [symbol: string]: HistoricalData;
+}
+
+// ChartData for Recharts
+export interface ChartData {
+  date: string;
+  price: number;
+  volume?: number;
+}
